@@ -1,12 +1,13 @@
 <template>
   <div id="app">
-    <Header :numCorrect="numCorrect" :numTotal="numTotal" />
+    <Header :totalQuestions="totalQuestions" :numCorrect="numCorrect" :numTotal="numTotal" />
     <b-container class="bv-example-row">
       <b-row>
-        <b-col sm="6" offset="3">
+        <b-col sm="12" md="10" lg="6" offset-md="1" offset-lg="3">
           <!-- without this v-if one error was coming, the response from server was taking time and components were mounted before that,
           the application was working as until human interaction there were questions -->
-          <quiz :increment="increment" v-if="questions.length" :currentQuestion="questions[index]" :next="next"/>
+          <quiz @showFinalScore="finalScore" v-show="!runFinalScore" :totalQuestions="totalQuestions" @clicked="next" :increment="increment" v-if="questions.length" :currentQuestion="questions[index]" :index="index"/>
+          <FinalScore @replay="replay" v-if="runFinalScore" :totalQuestions="totalQuestions" :numCorrect="numCorrect"/>
         </b-col>
       </b-row>
     </b-container>
@@ -14,7 +15,8 @@
 </template>
 
 <script>
-import Header from "./components/header";
+import FinalScore from "@/components/FinalScore.vue"
+import Header from "./components/header.vue";
 import quiz from "./components/Quiz.vue";
 
 export default {
@@ -24,38 +26,58 @@ export default {
       questions: [],
       index:0,
       numCorrect:0,
-      numTotal:0
+      numTotal:0,
+      runFinalScore:false
     };
   },
+  computed:{
+    totalQuestions(){
+      return this.questions.length;
+    }
+  },
   methods:{
+    replay(){
+      this.questions= []
+      this.index=0
+      this.numCorrect=0
+      this.numTotal=0
+      this.runFinalScore=false
+      this.fetchQuestions()
+    },
+    finalScore(){
+      this.runFinalScore= true;
+    },
     next(){
-      this.index++;
+      this.index++
     },
     increment(isCorrect){
       if(isCorrect){
         this.numCorrect++
       }
       this.numTotal++
-    }
-  },
-  components: {
-    Header,
-    quiz
-  },
-  mounted() {
-    fetch("https://opentdb.com/api.php?amount=10&category=9&type=multiple", {
-      method: "get"
-    })
+    },
+    fetchQuestions() {
+      fetch("https://opentdb.com/api.php?amount=5&difficulty=easy&type=multiple", {
+        method: "get"
+      })
       .then(response => {
         return response.json();
       })
       .then(jsondata => {
         this.questions = jsondata.results;
       })
-      .catch((er)=>{
-        console.log("Cant fetch the data:",er)
+      .catch( ()=>{
         prompt("Check internet connection")
-        })
+      })
+    }
+  },
+  components: {
+    Header,
+    quiz,
+    FinalScore
+  },
+  mounted(){
+    this.fetchQuestions()
   }
 };
 </script>
@@ -67,6 +89,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 20px;
 }
 </style>
