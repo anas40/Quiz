@@ -9,11 +9,19 @@
           v-for="(answer,index) in answers"
           :key="answer"
           @click="selectAnswer(index)"
-          :class="[selectedAnswer === index?'selected':'']"
-        >{{answer}}</b-list-group-item>
+          :class="answerClass(index)"
+        >
+        {{answer}}
+        </b-list-group-item>
       </b-list-group>
 
-      <b-button @click="submitAnswer" variant="primary" href="#">Submit</b-button>
+      <b-button 
+      @click="submitAnswer" 
+      variant="primary"
+      :disabled="selectedIndex === null || answered" 
+      >
+      Submit
+      </b-button>
       <b-button @click="next" variant="success" href="#">Next</b-button>
     </b-jumbotron>
   </div>
@@ -26,14 +34,15 @@ export default {
   props: {
     currentQuestion: Object,
     next: Function,
-    isCorrect:Function
+    isCorrect:Function,
+    increment:Function
   },
   watch: {
     currentQuestion: {//watch runs when props change only
       immediate: true,//with this we can run when props passed as well on change
       handler() {
-        this.selectedAnswer = null;
         this.shuffleAnswer();
+        this.answered = false
       }
     }
   },
@@ -41,7 +50,8 @@ export default {
     return {
       selectedIndex: null,
       correctIndex:null,
-      shuffledAnswers: []
+      shuffledAnswers: [],
+      answered:false
     };
   },
   computed: {
@@ -55,6 +65,7 @@ export default {
   },
   methods: {
     selectAnswer(index) {
+      console.log("yes target selectAnswer")
       this.selectedIndex = index;
     },
     submitAnswer(){
@@ -62,6 +73,7 @@ export default {
         if(this.selectedIndex === this.correctIndex){
             isCorrect = true
         }
+        this.answered = true
         this.increment(isCorrect)
     },
     shuffleAnswer() {
@@ -71,6 +83,21 @@ export default {
       ];
       this.shuffledAnswers = _.shuffle(answers);
       this.correctIndex = this.shuffledAnswers.indexOf(this.currentQuestion.correct_answer)
+    },
+    answerClass(index){
+        let answerClass = ''
+        if(this.selectedIndex === index && !this.answered){
+            answerClass = "selected"
+        }
+        else{
+            if(index === this.correctIndex && this.answered){
+                answerClass = "correct"
+            }
+            if(this.selectedIndex === index && index !== this.correctIndex && this.answered){
+                answerClass = "incorrect"
+            }
+        }
+        return answerClass
     }
   }
 };
