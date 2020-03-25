@@ -2,8 +2,11 @@
   <div>
     <b-nav tabs>
       <b-nav-item disabled><b>Quiz</b></b-nav-item>
-      <b-nav-item disabled>Count: {{numCorrect}}/{{numTotal}}</b-nav-item>
+      <b-nav-item disabled>Answered: {{numTotal}}</b-nav-item>
+      <b-nav-item disabled>Correct: {{numCorrect}}</b-nav-item>
+      <b-nav-item disabled>Total Questions: {{totalQuestions}}</b-nav-item>
     </b-nav>
+    
   </div>
 </template>
 
@@ -11,7 +14,14 @@
 export default {
   props:{
     numCorrect:Number,
-    numTotal:Number
+    numTotal:Number,
+    totalQuestions:Number
   }
 }
 </script>
+<style scoped>
+
+ul h2{
+  align-self:flex-end;
+}
+</style>
